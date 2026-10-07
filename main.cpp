@@ -1546,26 +1546,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
                 plugin::InternalMessage(L"Plugin Loader (%s) was attached to process.\n\n  Loader module: %s\n  Process name: %s\n  EntryPoint: 0x%X\n\nLoading plugins...",
                     LOADER_VERSION, moduleName.c_str(), loader::GetModuleName(NULL).c_str(), ep);
             }
-            /*
-            auto id = PES::GetAppVersion().id();
-            if (id == ID_FIFA14_1700) {
-                InitImportsCallAddr = 0x4027FA;
-                OrigInitImports = plugin::patch::RedirectCall(InitImportsCallAddr, OnInitImports);
-                GetStartupInfoAddr = 0x3FF040C;
-            }
-            else if (id == ID_FIFA14_1400_3DM) {
-                InitImportsCallAddr = 0x40284A;
-                OrigInitImports = plugin::patch::RedirectCall(InitImportsCallAddr, OnInitImports);
-                GetStartupInfoAddr = 0x3F9A3E4;
-            }
-            else if (id == ID_FIFA08_1200_VTY) {
-                OrigEntryPoint = plugin::patch::RedirectJump(0x173CFAD, DelayedLoadPlugins);
-            }
-            else if (id == ID_FIFA08_1200_BFF) {
-                OrigEntryPoint = plugin::patch::RedirectJump(0x1C227B0, DelayedLoadPlugins);
-            }
-            else
-            */
             loader::LoadPlugins();
         }
     }
