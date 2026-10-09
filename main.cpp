@@ -997,28 +997,6 @@ __declspec(naked) void _DllCanUnloadNow() { _asm { jmp[shared.DllCanUnloadNow] }
 __declspec(naked) void _DllGetClassObject() { _asm { jmp[shared.DllGetClassObject] } }
 __declspec(naked) void _DebugSetMute() { _asm { jmp[shared.DebugSetMute] } }
 
-uintptr_t OrigInitImports = 0;
-uintptr_t InitImportsCallAddr = 0;
-uintptr_t GetStartupInfoAddr = 0;
-uintptr_t OrigEntryPoint = 0;
-
-void __stdcall MyGetStartupInfoW(LPSTARTUPINFOW lpStartupInfo) {
-    loader::LoadPlugins();
-    GetStartupInfoW(lpStartupInfo);
-}
-
-void OnInitImports() {
-    plugin::patch::RedirectCall(InitImportsCallAddr, (void *)OrigInitImports);
-    plugin::CallDynGlobal(OrigInitImports);
-    plugin::patch::SetPointer(GetStartupInfoAddr, MyGetStartupInfoW);
-}
-
-void NAKED DelayedLoadPlugins() {
-    __asm call loader::LoadPlugins
-    __asm mov eax, OrigEntryPoint
-    __asm jmp eax
-}
-
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved) {
     if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
         std::wstring gameDir = loader::GetModuleDir(NULL);
@@ -1540,7 +1518,12 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
         if (loader::debugMode == 2 && !loadingResult)
             plugin::InternalMessage(L"Failed to load " + moduleName);
-        if (loader::anyProcess || (plugin::StartsWith(procName, L"pes") || plugin::StartsWith(procName, L"settings"))) {
+        if (loader::anyProcess || (
+            plugin::StartsWith(procName, L"pes") ||
+            plugin::StartsWith(procName, L"settings") ||
+            plugin::StartsWith(procName, L"we"))
+            )
+        {
             auto ep = PES::GetEntryPoint();
             if (loader::debugMode) {
                 plugin::InternalMessage(L"Plugin Loader (%s) was attached to process.\n\n  Loader module: %s\n  Process name: %s\n  EntryPoint: 0x%X\n\nLoading plugins...",
